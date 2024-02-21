@@ -24,7 +24,7 @@ contract MasterTokenMint {
 
     // Modifier that only allows the owner to execute a function
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can perform this action!");
+        require(msg.sender == owner, "Only owner can execute this action!");
         _;
     }
 
