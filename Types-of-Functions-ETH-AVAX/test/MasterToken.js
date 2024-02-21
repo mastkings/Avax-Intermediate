@@ -1,90 +1,95 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("MasterToken", function () {
-    let MasterToken;
-    let masterToken;
-    let admin;
-    let user1;
-    let user2;
-    let addrs;
-    const initialAmount = 1000;
+describe("MasterTokenMint", function () {
+  let Token, token, owner, addr1;
 
-    beforeEach(async function () {
-        MasterToken = await ethers.getContractFactory("MasterToken");
-        [admin, user1, user2, ...addrs] = await ethers.getSigners();
-        masterToken = await MasterToken.deploy();
-        await masterToken.deployed();
+  beforeEach(async function () {
+    // Get the ContractFactory and Signers here.
+    Token = await ethers.getContractFactory("MasterTokenMint");
+    [owner, addr1] = await ethers.getSigners();
+
+    // Deploy the contract
+    token = await Token.deploy();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct name, symbol, and owner", async function () {
+      // Check the initial values after deployment
+      expect(await token.tokenName()).to.equal(
+        "Master Token Mint"
+      );
+      expect(await token.tokenSymbol()).to.equal("MTM");
+      expect(await token.owner()).to.equal(owner.address);
+    });
+  });
+
+  describe("Minting", function () {
+    it("Should revert if minted by a non-owner", async function () {
+      // Try to mint tokens by a non-owner
+      await expect(token.connect(addr1).mint(addr1.address, 100)).to.be.revertedWith(
+        "Only owner can perform this action!"
+      );
+
+      // Check that the balance and total supply remain unchanged
+      expect(await token.balance(addr1.address)).to.equal(0);
+      expect(await token.totalSupply()).to.equal(0);
+    });
+  });
+
+  describe("Transferring", function () {
+    it("Should transfer tokens between accounts", async function () {
+      // Mint tokens
+      await token.connect(owner).mint(owner.address, 100);
+
+      // Transfer tokens from owner to addr1
+      await token.transfer(addr1.address, 50);
+
+      // Check the balances of addr1 and owner after the transfer
+      expect(await token.balance(addr1.address)).to.equal(50);
+      expect(await token.balance(owner.address)).to.equal(50);
     });
 
-    describe("Deployment", function () {
-        it("should set the right admin", async function () {
-            expect(await masterToken.admin()).to.equal(admin.address);
-        });
+    it("Should fail if sender does not have enough tokens", async function () {
+      // Mint tokens
+      await token.connect(owner).mint(addr1.address, 100);
+
+      // Try to transfer more tokens than the sender has
+      await expect(token.transfer(addr1.address, 101)).to.be.revertedWith(
+        "Transfer amount exceeds balance"
+      );
     });
 
-    describe("createToken", function () {
-        it("should only allow admin to create tokens", async function () {
-            await expect(masterToken.connect(user1).createToken(user1.address, 100))
-                .to.be.revertedWith("MasterToken: caller is not the admin");
+    it("Should fail if sender tries to transfer tokens to themselves", async function () {
+      // Mint tokens
+      await token.connect(owner).mint(owner.address, 100);
 
-            await expect(masterToken.connect(admin).createToken(user1.address, 100))
-                .not.to.be.reverted;
-        });
+      // Try to transfer tokens to the owner address (self-transfer)
+      await expect(token.transfer(owner.address, 50)).to.be.revertedWith(
+        "You can not transfer token(s) to yourself!"
+      );
+    });
+  });
 
-        it("should increase circulating supply when tokens are created", async function () {
-            const supplyBefore = await masterToken.circulatingSupply();
-            await masterToken.connect(admin).createToken(user1.address, initialAmount);
-            const supplyAfter = await masterToken.circulatingSupply();
-            expect(supplyAfter).to.equal(supplyBefore.add(initialAmount));
-        });
+  describe("Burning", function () {
+    it("Should burn tokens and reduce total supply", async function () {
+      // Mint tokens
+      await token.connect(owner).mint(owner.address, 100);
+
+      // Burn tokens
+      await token.burn(50);
+
+      // Check the balance and total supply after burning
+      expect(await token.balance(owner.address)).to.equal(50);
+      expect(await token.totalSupply()).to.equal(50);
     });
 
-    describe("eliminate", function () {
-        beforeEach(async function () {
-            await masterToken.connect(admin).createToken(user1.address, initialAmount);
-        });
-
-        it("should allow token holders to burn tokens", async function () {
-            const burnAmount = 100;
-            await masterToken.connect(user1).eliminate(burnAmount);
-            const balanceAfter = await masterToken.accountBalances(user1.address);
-            expect(balanceAfter).to.equal(initialAmount - burnAmount);
-        });
-
-        it("should decrease circulating supply when tokens are burned", async function () {
-            const burnAmount = 100;
-            const supplyBefore = await masterToken.circulatingSupply();
-            await masterToken.connect(user1).eliminate(burnAmount);
-            const supplyAfter = await masterToken.circulatingSupply();
-            expect(supplyAfter).to.equal(supplyBefore.sub(burnAmount));
-        });
-    });
-
-    describe("sendToken", function () {
-        beforeEach(async function () {
-            await masterToken.connect(admin).createToken(user1.address, initialAmount);
-        });
-
-        it("should transfer tokens correctly", async function () {
-            const transferAmount = 100;
-            await masterToken.connect(user1).sendToken(user2.address, transferAmount);
-            const balanceUser2 = await masterToken.accountBalances(user2.address);
-            expect(balanceUser2).to.equal(transferAmount);
-        });
-
-        it("should not allow transfers to the same address", async function () {
-            const transferAmount = 100;
-            await expect(masterToken.connect(user1).sendToken(user1.address, transferAmount))
-                .to.be.revertedWith("MasterToken: cannot transfer to the same address");
-        });
-
-        it("should not allow transfers if insufficient balance", async function () {
-            const transferAmount = initialAmount + 1;
-            await expect(masterToken.connect(user1).sendToken(user2.address, transferAmount))
-                .to.be.revertedWith("MasterToken: transfer amount exceeds balance");
-        });
-    });
+    it("Should revert if the contract creator doesn't have sufficient balance to burn", async function () {
+        // Mint tokens
+        await token.connect(owner).mint(owner.address, 100);
+  
+        // Burn tokens
+        await expect(token.connect(owner).burn(101)).to.be.revertedWith("Insufficient balance");
+      });
+  });
 });
-
-

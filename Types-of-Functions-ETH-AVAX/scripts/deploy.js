@@ -4,15 +4,15 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Deploys the MasterToken contract.
+ * Deploys the MasterTokenMint contract.
  */
 async function deployContract() {
-  const MasterToken = await hre.ethers.getContractFactory("MasterToken");
-  const mastertoken = await MasterToken.deploy(); 
-  await mastertoken.deployed();
-  console.log("MasterToken deployed to:", mastertoken.address);
+  const MasterTokenMint = await hre.ethers.getContractFactory("MasterTokenMint");
+  const mastertokenmint = await MasterTokenMint.deploy(); 
+  await mastertokenmint.deployed();
+  console.log("MasterTokenMint deployed to:", mastertokenmint.address);
  
-  return mastertoken.address; 
+  return mastertokenmint.address; 
  } 
 
 /**
@@ -20,7 +20,7 @@ async function deployContract() {
  * @param {string} address - The contract address.
  */
 function exportAddress(address) {
-  const content = `export const MasterTokenAddress = '${address}';\n`;
+  const content = `export const MasterTokenMintAddress = '${address}';\n`;
   const filePath = path.join(__dirname, 'address.js'); 
   fs.writeFileSync(filePath, content);
  }
