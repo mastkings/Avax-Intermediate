@@ -1,11 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-/**
- * Welcome to our little demo on error handling in Solidity!
- * We're going to cover a few patterns like require, assert, and some custom error messages.
- * Let's dive in and make our smart contracts more robust and user-friendly!
- */
 contract ErrorHandling {
     // Here's where we keep track of our contract's balance. Starting at zero, naturally.
     uint public balance = 0;

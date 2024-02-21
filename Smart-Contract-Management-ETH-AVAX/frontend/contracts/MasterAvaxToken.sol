@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 contract MasterAvaxToken {
 
@@ -16,8 +16,8 @@ contract MasterAvaxToken {
     constructor() {
         name = "Master Avax Token";
         symbol = "MAT";
-        totalSupply = 8;
-        balances[msg.sender] = 8;
+        totalSupply = 10;
+        balances[msg.sender] = 10;
     }
 
     // Function to mint new tokens and increase the balance of a specified address
