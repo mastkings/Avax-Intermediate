@@ -1,3 +1,3 @@
 
-    export const tokenAddress = '0xBA27eAEa090C6c9B92920C1893C396Bf7a666B48'
+    export const tokenAddress = '0x7d24Fe1BDD3DeF8AcFB0259d71C8ECC1105b4722'
   

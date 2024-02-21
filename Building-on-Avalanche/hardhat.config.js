@@ -6,7 +6,12 @@ module.exports = {
   networks: {
     fuji: {
       url: "https://lingering-dark-flower.avalanche-testnet.quiknode.pro/ee5ec630dd02f6e21ede4b28c611765b08bf3f4f/ext/bc/C/rpc/",
-      accounts: [""],
+      accounts: ["59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"],
     },
   },
+  etherscan: {
+    apiKey: {
+      avalancheFujiTestnet: "https://lingering-dark-flower.avalanche-testnet.quiknode.pro/ee5ec630dd02f6e21ede4b28c611765b08bf3f4f/ext/bc/C/rpc/"
+    }
+  }
 };
